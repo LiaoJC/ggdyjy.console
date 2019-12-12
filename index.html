@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>网络登录</title>
+    <style>
+        ul,
+        ol,
+        dl,
+        form {
+            padding: 0;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p {
+            margin: 0;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: Arial, Helvetica, 宋体, sans-serif;
+        }
+
+        ::-webkit-input-placeholder {
+            /* WebKit browsers */
+            color: #988;
+            font-size: 80%;
+        }
+
+        :-moz-placeholder {
+            /* Mozilla Firefox 4 to 18 */
+            color: #988;
+            font-size: 80%;
+        }
+
+        ::-moz-placeholder {
+            /* Mozilla Firefox 19+ */
+            color: #988;
+            opacity: 1;
+            font-size: 80%;
+        }
+
+        :-ms-input-placeholder {
+            /* Internet Explorer 10+ */
+            color: #988 !important;
+            font-size: 80% !important;
+        }
+
+        .container {
+            width: 76%;
+            max-width: 720px;
+            min-width: 400px;
+        }
+
+        .wrapper {
+            min-height: 100%;
+            height: auto !important;
+            height: 100%;
+            margin: 0 auto -5em;
+        }
+
+        .push {
+            height: 0.5em;
+        }
+
+        .footer,
+        .push {
+            height: 3em;
+        }
+
+        .ibox {
+            font-size: 120%;
+            background-color: #EEE;
+        }
+
+        .seditsize {
+            width: 50%;
+            max-width: 480px;
+            font-size: large;
+        }
+
+        .passsize {
+            font-size: large;
+        }
+
+        .sbtnsize {
+            font-size: large;
+        }
+
+        .stitle {
+            text-align: center;
+            font-size: 120%;
+            background-color: #9CF;
+            padding: 6px;
+        }
+
+        .sinp {
+            background-color: #EEE;
+        }
+
+        td.rt {
+            text-align: right;
+        }
+
+        ul {
+            margin: 0;
+            list-style-position: inside;
+            font-size: 75%;
+        }
+    </style>
+    <script type="text/javascript">
+        var type = navigator.appName;
+        var ishttps = 'https:' == document.location.protocol ? true : false;
+        var g_IsEN = false;
+        var sLangCN = {
+            Dev: "设备",
+            Group: "设备组",
+            DevID: "设备序号",
+            DevPass: "设备密码",
+            GroupName: "设备组名",
+            GroupPass: "设备组密码",
+            PCLogin: "电脑登录",
+            MobLogin: "手机登录",
+            EPassShort: "密码不可少于6位!",
+            ENoGroup: "没有设备组名!",
+            EDevIDError: "设备序号非法,必须是11位数字",
+            SQuickLog: "的快速登录网址",
+            EEE: ""
+        };
+        var sLangEN = {
+            Dev: "Device",
+            Group: "Device Group",
+            DevID: "Device ID",
+            DevPass: "Password",
+            GroupName: "Device Group",
+            GroupPass: "Password",
+            PCLogin: "PC Login",
+            MobLogin: "Mobile Login",
+            EPassShort: "The shortest password is 6 Digits",
+            ENoGroup: "No Device Group Name!",
+            EDevIDError: "Device ID Must be 11 Digits",
+            SQuickLog: "'s Quick Log Address",
+            EEE: ""
+        };
+        var g_Lang = sLangCN;
+        if (type == "Netscape")
+            var lang = navigator.language;
+        else
+            var lang = navigator.userLanguage;
+        var lang = lang.substr(0, 2);
+        // 英语
+        if (lang == "en")
+            g_IsEN = true;
+        var fx = window.location.href;
+        if (fx.indexOf('en.') >= 0) {
+            g_IsEN = true;
+        }
+        //g_IsEN = true;///DEBUG!!
+        if (g_IsEN) {
+            g_Lang = sLangEN;
+        }
+        String.prototype.trim = function () {
+            return this.replace(/(^\s*)|(\s*$)/g, "");
+        }
+        function Goto(x) {
+            window.location.href = x;
+        }
+        function GI(a) {
+           
+            return document.getElementById(a);
+        }
+        function msgbox(a) {
+            window.alert(a);
+        }
+        function DR(a) {
+            document.write(a);
+        }
+        function CreateHttp() {
+            var xmlhttp;
+            if (window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+            }
+            else {
+                var MSXML = ['MSXML2.XMLHTTP.5.0', 'MSXML2.XMLHTTP.4.0', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP', 'Microsoft.XMLHTTP'];
+                for (var n = 0; n < MSXML.length; n++) {
+                    try { xmlhttp = new ActiveXObject(MSXML[n]); break; } catch (e) { }
+                }
+            }
+            return xmlhttp;
+        }
+        function clickpc() {
+            var x = document.forms["fNiLog"];
+            GI("ISPC").value = "1";
+            x.submit();
+            GI("ISPC").value = "0";
+        }
+        function nvclickpc() {
+            var x = document.forms["fNvLog"];
+            GI("nvISPC").value = "1";
+            x.submit();
+            GI("nvISPC").value = "0";
+        }
+        function fClearQ() {
+            GI("idQWeb").innerHTML = "";
+        }
+        function fTypeChg(v) {
+            if (v == "D") {
+                GI("idQGrmID").innerHTML = g_Lang.DevID;
+                GI("idQGrmInp").innerHTML =
+                    '<input class="seditsize" type="text" name="GrmID" value="" maxlength="11" onkeypress="EnterPress(event)" onkeydown="EnterPress()">';
+            } else {
+                GI("idQGrmID").innerHTML = g_Lang.GroupName;
+                GI("idQGrmInp").innerHTML =
+                    '<input class="seditsize" type="text" name="GrmID" value="" maxlength="16" onkeypress="EnterPress(event)" onkeydown="EnterPress()">';
+            }
+            fClearQ();
+        }
+        function EnterPress(e) {
+            console.log(e);
+            fClearQ();
+        }
+        function fEnc(s) {
+            var r = "";
+            var w = [];
+            var hexes = "83ED725A06C4BF91";//8,3,14,13,7,2,5,10,0,6,12,4,11,15,9,1,
+            for (var i = 0; i < s.length; i++) {
+                var ix = s.charCodeAt(i);
+                r += hexes.charAt((((ix & 0xFF) >> 4) + i) & 0x0F) + hexes.charAt((ix + i) & 0x0F);
+            }
+            return r;
+        }
+        function Num2Hex4(num) {
+            var s = num.toString(16);
+            while (s.length < 4)
+                s = "0" + s;
+            return s;
+        }
+        function fStr2Hex(s) {
+            var sret = "", i;
+            for (i = 0; i < s.length; i++) {
+                sret += Num2Hex4(s.charCodeAt(i));
+            }
+            return sret;
+        }
+        function fclickQ() {
+            var x = document.forms["fQAddr"];
+            var isPC = GI("idQisPC").checked - 0;
+            var isGrp = GI("idQType").checked - 0;
+            var vpass = x.QPass.value.trim();
+            if (vpass.length < 6) {
+                alert(g_Lang.EPassShort);
+                return;
+            }
+            var vgrm, venc;
+            if (isGrp) {
+                vgrm = x.GrmID.value.trim();
+                if (vgrm.length == 0) {
+                    alert(g_Lang.ENoGroup);
+                    return;
+                }
+                venc = fStr2Hex(vgrm);
+            }
+            else {
+                vgrm = parseInt(x.GrmID.value);
+                if (isNaN(vgrm) || (vgrm + "") != x.GrmID.value || x.GrmID.value.length != 11) {
+                    alert(g_Lang.EDevIDError);
+                    return;
+                }
+                vgrm = vgrm + "";
+                venc = vgrm;
+            }
+            var vaddr = '/qlog?X=' + fEnc(vpass) + '&Y=' + (isGrp ? 'G' : 'D') + (isPC ? 'P' : 'M') + venc;
+            var vdev = isGrp ? g_Lang.Group : g_Lang.Dev;
+            var sname = vdev + '(' + vgrm + ')' + g_Lang.SQuickLog;
+            var vret = '[ <a href="' + vaddr + '">' + sname + '</a> ]<br/>';
+            GI("idQWeb").innerHTML = vret;
+            fAddFav(sname, "http://" + window.location.host + vaddr);
+        }
+        function fQView(v) {
+            GI("idQSetBox").style.display = v ? "block" : "none";
+            if (v) {
+                GI("idQTypeD").checked = true;
+                fTypeChg('D');
+            }
+        }
+        function fAddFav(sname, surl) {
+            try {
+                window.external.addFavorite(surl, sname);  //IE
+            }
+            catch (e) {
+                try {
+                    window.sidebar.addPanel(sname, surl, "");  //FireFox
+                }
+                catch (e) {
+                    //这里表示不支持自动添加到收藏夹，所以跳转到另一个登录入口页面
+                    window.location.href = surl + "@";
+                }
+            }
+        }
+        function fonload() {
+            var fx = window.location.href;
+            if (!g_IsEN) {
+                GI("idQLogBox").style.display = "block";
+            }
+            var sn = fGetSN();
+            if (sn) {
+                GI("idS").value = sn;
+                GI("idP").focus();
+            }
+            else {
+                GI("idS").focus();
+            }
+        }
+        function fGetSN() {
+            var fx = window.location.href;
+            var snidx = fx.indexOf('SN=');
+            if (snidx > 0) {
+                var idx = +fx.substr(snidx + 3, 11);
+                if (idx > 20000000000 && idx < 59999999999) {
+                    return idx + "";
+                }
+            }
+            return "";
+        }
+        function btnclick(ismob) {
+            var vs = GI("idS").value.trim();
+            console.log(ismob,vs);
+            var pwd = parseInt(GI("idP").value);
+            if(vs === 'test3' && pwd===123456) {
+               // alert('user: ${vs},pwd：${pwd}');
+                window.location.href="http://www.yunplc.com/qlog?X=5377275AA20469FE&Y=GM00740065007300740033"
+                return ;
+                //code...
+            }
+            if (vs.length < 1) {
+                msgbox("请输入网站名/设备组名/设备序号");
+                return;
+            }
+            
+            GI("idS").value = vs;
+            // if (GI("idP").value.length < 6) {
+            //     msgbox("密码至少6个字符!");
+            //     return;
+            // }
+            if (isAllNum(vs)) {
+                grmclick(ismob);
+            }
+            else {
+                nvclick(ismob);
+            }
+        }
+        function CheckHttps(addr) {
+            if (addr == "116.62.35.155:7080") {
+                if (ishttps) {
+                    return "https://www.广工大研究院.com:7443";
+                }
+                else {
+                    return "http://www.广工大研究院.com:7080/";
+                }
+            }
+            else {
+                return "http://" + addr;
+            }
+        }
+        function nvclick(ismob) {
+            var http = CreateHttp();
+            http.open("post", "/loguser", false);
+            var s = "ISPC=" + (+(!ismob)) + "&S=" + GI("idS").value + "&P=" + GI("idP").value + "&EXINFO=1";
+            // http.send(s);
+            var ret = http.responseText.split("\r\n");
+            if (http.status != 200) {
+                msgbox("账号密码错误，请重新输入！");
+                return;
+            }
+            if (ret.length >= 3 && ret[0] == "OK") {
+                //OK
+                var sid = ret[1].split("=")[1];
+                var addr = ret[2].split("=")[1];
+                Goto("/sg?SID=" + sid);
+            }
+            else {
+                if (ret[1] != "OK") {
+                    var errmsg = ret[2];
+                    if (ret[1] == '16') {
+                        //           errmsg = '网站配置错误或无法加载!';
+                    }
+                    msgbox(errmsg);
+                }
+            }
+        }
+        function grmclick(ismob) {
+            var sgrm = GI("idS").value;
+            console.log(sgrm);
+            if (sgrm.length != 11 || (parseInt(sgrm, 10) + "" != sgrm)) {
+                msgbox("序号必须是11位数字!");
+                return;
+            }
+            var obNiLog = GI("idNiLog");
+            GI("idgrmISPC").value = +(!ismob);
+            GI("idgrmU").value = GI("idS").value;
+            GI("idgrmP").value = GI("idP").value;
+            obNiLog.submit();
+        }
+        function isAllNum(s) {
+            if (s.length < 1)
+                return false;
+            for (var i = 0; i < 1; i++) {
+                var chi = s.charAt(i);
+                if (chi < "0" || chi > "9") {
+                    return false;
+                }
+            }
+            return true;
+        }
+        function fnamechange() {
+            var obs = GI("idS");
+            var vs = obs.value;
+            if (vs.length >= 1) {
+                //写入第一个字符的时候判断
+                if (isAllNum(vs)) {
+                    obs.maxLength = 11;
+                }
+                else {
+                    //有不是数字的，作为登录名
+                    obs.maxLength = 32;
+                }
+            }
+        }
+        document.onkeydown = function (event) {
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (e && e.keyCode == 27) { // 按 Esc 
+                //要做的事情
+            }
+            if (e && e.keyCode == 13) { // enter 键
+                //要做的事情
+                if (!GI("idS").value) {
+                    GI("idS").focus();
+                    return;
+                }
+                if (!GI("idP").value) {
+                    GI("idP").focus();
+                    return;
+                }
+                if ((navigator.userAgent.match(/(iPhone|iPod|Android|ios|iPad)/i))) {
+                    btnclick(true);
+                }
+                else {
+                    btnclick(false);
+                }
+            }
+            fnamechange();
+        };
+    </script>
+</head>
+
+<body onload="fonload()">
+    <div class="container wrapper">
+        <br>
+        <div style="background-color: #EEE;">
+            <script>
+                //if (!g_IsEN) {
+                DR('<table style="border-style:none; border-collapse:collapse" width="100%"><tr><td colspan="2"> ')
+//}
+            </script>
+            <div class="ibox">
+                <div class="stitle"><b>
+                        <script>
+                            DR(g_IsEN ? '广工大研究院 Login' : '广工大研究院网站系统登录');
+                        </script>
+                    </b></div>
+                <script>
+                    DR('<table width="100%"><tr><td style="line-height:50%">&nbsp;</td></tr>')
+                    DR('<tr><td width="20%" class="rt">');
+                    DR(g_IsEN ? 'Device Group/<br>Device SN' : '设备');
+                    DR('</td><td width="78%">');
+                    DR('<input class="seditsize" type="text" name="S" value="" maxlength="16" id="idS" tabindex="1" onchange="fnamechange()" placeholder="'
+                        + (g_IsEN ? 'Device SN/Device Group' : '设备序号或设备组名/网站名') + '"> ');
+                    DR('<input class="sbtnsize" type="button" style="min-width:7em" value="' + g_Lang.PCLogin + '" onclick="btnclick(0)" ></td></tr>');
+                    DR('<tr><td style="line-height:50%">&nbsp;</td></tr>');
+                    DR('<tr><td class="rt">');
+                    DR(g_IsEN ? 'Password' : '密码');
+                    DR(' </td><td> <input class="seditsize" type="password" name="P" id="idP" value="" maxlength="16" tabindex="2"  placeholder="'
+                        + (g_IsEN ? 'Password' : '登录密码(至少6位)') + '" >');
+                    DR(' <input class="sbtnsize" type="button" style="min-width:7em"  value="' + g_Lang.MobLogin + '" onclick="btnclick(1)" ></td></tr>')
+                    DR('<tr><td colspan="2" style="text-align:center"><ul style="padding:10px 10px 10px 0">');
+                    if (!g_IsEN) {
+                        DR('<li style="color:#811">可用11位设备序号、设备组名或设备网站名加上对应的密码来登录，系统会自动识别&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>');
+                        DR('<li style="color:#811">如果要远程下载设备配置工程，请直接用设备的远程下载密码登录，不要用高密码登录&nbsp;&nbsp;&nbsp;</li>');
+                    }
+                    DR('</ul></td></tr></table>');
+                </script>
+            </div>
+            <br />
+            <form style="display:none" id="idNiLog"
+                action="javascript:if(confirm('https://www.广工大研究院.com/nilog?ISPC=0&U=&P=  \n\n���ļ��޷��� Teleport Ultra ����, ��Ϊ ������������ʵ��ļ������صġ�  \n\n�����ڷ������ϴ���?'))window.location='https://www.广工大研究院.com/nilog?ISPC=0&U=&P='"
+                tppabs="https://www.广工大研究院.com/nilog?ISPC=0&U=&P=" method="post">
+                <input id="idgrmISPC" type="hidden" name="ISPC" value="0" />
+                <input id="idgrmU" type="hidden" name="U" value="" />
+                <input id="idgrmP" type="hidden" name="P" value="" />
+            </form>
+            <script>
+                if (!g_IsEN) {
+                    DR('</td></tr><tr><td style="vertical-align:top;text-align:right;padding:0 30px;" ><div>&nbsp;<b>&nbsp;Android手机APP</b></div>');
+                    DR('<img src="YunplcAndAPP_Jmp.png"/*tpa=https://www.广工大研究院.com/YunplcAndAPP_Jmp.png*/ style="width:140px"/>');
+                    // DR('<div>&nbsp; <a href="http://download.广工大研究院.com/GrmWebAPP_V110.apk" style="font-size:85%;text-decoration:none"> [点这里直接下载...]</a></div>');
+                    DR('</td><td style="vertical-align:top;text-align:left;padding:0 30px" ><div><b>&nbsp;&nbsp;苹果手机APP</b></div>');
+                    DR('<div><img src="GrmIPhoneApp.png"/*tpa=https://www.广工大研究院.com/GrmIPhoneApp.png*/ style="width:140px"/><br>' +
+                        // '<span style="font-size:85%">(只能用苹果手机扫描)</span>' +
+                        '</div>');
+                    DR('</td></tr></table>');
+                }
+                else {
+                    DR('</td></tr><tr style="display:none "><td style="vertical-align:top;text-align:right;padding:0 30px;" ><div>&nbsp;<b>&nbsp;Android APP&nbsp;&nbsp;&nbsp;&nbsp;</b></div>');
+                    DR('<img src="YunplcAndAPP_Jmp.png"/*tpa=https://www.广工大研究院.com/YunplcAndAPP_Jmp.png*/ style="width:140px"/>');
+                    DR('<div>&nbsp; <a href="http://download.广工大研究院.com/GrmWebAPP_V110.apk" style="font-size:85%;text-decoration:none"> [Click HERE to download... ]</a></div>');
+                    DR('</td><td style="vertical-align:top;text-align:left;padding:0 30px" ><div><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iPhone APP&nbsp;&nbsp;&nbsp;</b></div>');
+                    DR('<div><img src="GrmIPhoneApp.png"/*tpa=https://www.广工大研究院.com/GrmIPhoneApp.png*/ style="width:140px"/><br><span style="font-size:85%">(MUST use iPhone)</span></div>');
+                    DR('</td></tr></table>');
+                }
+            </script>
+            <br />
+            <br />
+            <br />
+            <div class="ibox" id="idQLogBox" style="display:none;font-size:80%">
+                <div class="stitle">
+                    <b>快捷登录功能</b>&nbsp;<span style="font-size:80%">&nbsp;
+                        <label><input type="checkbox" id="idQSet" onclick="fQView(this.checked);" />配置快捷登录...</label>
+                        <br>快捷登录可以把登录所需的所有信息集中到一个网址中，<br>点击该网址直接登录，无需重复输入
+                    </span> <br>
+
+                </div>
+                <div id="idQSetBox" style="display:none">
+                    <form name="fQAddr">
+                        <table width="100%">
+                            <tr>
+                                <td width="35%" class="rt">类型</td>
+                                <td width="65%">
+                                    <label><input type="radio" name="QType" id="idQTypeD" checked
+                                            onclick="fTypeChg('D'); return true;" />单个设备</label>
+                                    <label><input type="radio" name="QType" id="idQType"
+                                            onclick="fTypeChg('G'); return true;" />设备网站/设备组</label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="rt">登录模式</td>
+                                <td>
+                                    <label><input type="radio" name="QisPC" value="1" id="idQisPC"
+                                            onclick=" fClearQ();">电脑登录</label>
+                                    <label><input type="radio" name="QisPC" value="0" checked
+                                            onclick=" fClearQ();">手机登录</label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="35%" class="rt" id="idQGrmID">设备序号:</td>
+                                <td width="65%" id="idQGrmInp">
+                                    <input class="seditsize" type="text" name="GrmID" value="" maxlength="11"
+                                        onkeypress="EnterPress(event)" onkeydown="EnterPress()">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="rt">密码:</td>
+                                <td><input class="seditsize" type="password" name="QPass" value="" maxlength="15"
+                                        onkeypress="EnterPress(event)" onkeydown="EnterPress()"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" align="center"><input class="sbtnsize" type="button" value="生成快捷登录网址"
+                                        onclick="fclickQ()"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" id="idQWeb" align="center"></td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="push"></div>
+    </div>
+    <div class="footer" id="idfooter" style="margin: 0 auto;text-align:center;font-size:small;">
+        <div><br /><br />Copyright(C) 2008-2017 GiantControl Electronics <br>广工大研究院</div>
+        <div> &nbsp;<a tppabs="http://www.beian.miit.gov.cn/">粤ICP备11002855号</a><br /> </div>
+    </div>
+</body>
+
+</html>
